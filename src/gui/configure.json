@@ -130,6 +130,24 @@
                 { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos -lnvtegrahv", "condition": "config.integrity" }
             ]
         },
+        "drm_atomic": {
+            "label": "KMS",
+            "test": {
+                "include": [ "stdlib.h", "stdint.h" ],
+                "tail": [
+                    "extern \"C\" {",
+                    "#include <xf86drmMode.h>",
+                    "#include <xf86drm.h>",
+                    "}"
+                ],
+                "main": "drmModeAtomicReq *request;"
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libdrm" },
+                { "libs": "-ldrm", "condition": "!config.integrity" },
+                { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos -lnvtegrahv", "condition": "config.integrity" }
+            ]
+        },
         "egl": {
             "label": "EGL",
             "test": {
@@ -1017,6 +1035,11 @@
             "label": "KMS",
             "condition": "libs.drm",
             "output": [ "publicQtConfig", "privateFeature" ]
+        },
+        "drm_atomic": {
+            "label": "KMS",
+            "condition": "libs.drm_atomic",
+             "output": [ "publicFeature", "feature" ]
         },
         "libinput": {
             "label": "libinput",

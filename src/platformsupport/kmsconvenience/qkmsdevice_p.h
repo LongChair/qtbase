@@ -166,6 +166,8 @@ struct QKmsPlane
     Rotations initialRotation = Rotation0;
     Rotations availableRotations = Rotation0;
     uint32_t rotationPropertyId = 0;
+    uint32_t crtcPropertyId = 0;
+    uint32_t framebufferPropertyId = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QKmsPlane::Rotations)
@@ -191,6 +193,7 @@ struct QKmsOutput
     uint32_t drm_format = DRM_FORMAT_XRGB8888;
     QString clone_source;
     QVector<QKmsPlane> available_planes;
+    struct QKmsPlane *eglfs_plane = nullptr;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);
@@ -215,6 +218,14 @@ public:
     virtual void close() = 0;
     virtual void *nativeDisplay() const = 0;
 
+    bool hasAtomicSupport();
+
+#if QT_CONFIG(drm_atomic)
+    bool atomicCommit(void *user_data);
+    void atomicReset();
+
+    drmModeAtomicReq *atomic_request();
+#endif
     void createScreens();
 
     int fd() const;
@@ -248,6 +259,12 @@ protected:
     QString m_path;
     int m_dri_fd;
 
+    bool m_has_atomic_support;
+
+#if QT_CONFIG(drm_atomic)
+    drmModeAtomicReq *m_atomic_request;
+    drmModeAtomicReq *m_previous_request;
+#endif
     quint32 m_crtc_allocator;
 
     QVector<QKmsPlane> m_planes;
